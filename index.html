@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>增肌追蹤器</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="apple-touch-icon" href="https://cdn.jsdelivr.net/npm/twemoji@14.0.2/assets/72x72/1f3cb.png">
+<meta name="apple-mobile-web-app-title" content="增肌追蹤">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<style>
+:root {
+  --bg: #0f0f0f;
+  --surface: #1a1a1a;
+  --surface2: #242424;
+  --border: #2e2e2e;
+  --text: #f0f0f0;
+  --muted: #888;
+  --accent: #c8f060;
+  --accent2: #60c8f0;
+  --accent3: #f09060;
+  --red: #f06060;
+  --font-main: 'Noto Sans TC', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { background: var(--bg); color: var(--text); font-family: var(--font-main); min-height: 100vh; font-size: 14px; }
+
+/* NAV */
+.nav { position: sticky; top: 0; z-index: 100; background: var(--bg); border-bottom: 1px solid var(--border); display: flex; overflow-x: auto; scrollbar-width: none; }
+.nav::-webkit-scrollbar { display: none; }
+.nav-btn { flex: none; padding: 14px 18px; font-size: 12px; font-family: var(--font-mono); color: var(--muted); background: none; border: none; cursor: pointer; white-space: nowrap; border-bottom: 2px solid transparent; transition: all 0.15s; letter-spacing: 0.05em; }
+.nav-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* PAGES */
+.page { display: none; padding: 16px; max-width: 600px; margin: 0 auto; }
+.page.active { display: block; }
+
+/* HEADER */
+.page-title { font-family: var(--font-mono); font-size: 11px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 20px; }
+
+/* WEEK BAR */
+.week-bar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-bottom: 24px; }
+.week-day { aspect-ratio: 1; border-radius: 8px; border: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; cursor: pointer; transition: all 0.15s; background: var(--surface); }
+.week-day .wd-label { font-size: 10px; color: var(--muted); font-family: var(--font-mono); }
+.week-day .wd-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border); }
+.week-day.trained .wd-dot { background: var(--accent); }
+.week-day.today { border-color: var(--accent2); }
+
+/* DAY SELECTOR */
+.day-tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+.day-tab { padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border); background: none; color: var(--muted); font-size: 12px; font-family: var(--font-mono); cursor: pointer; transition: all 0.15s; }
+.day-tab.active { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 500; }
+
+/* EXERCISE CARD */
+.ex-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 12px; overflow: hidden; }
+.ex-header { padding: 12px 14px; display: flex; align-items: center; gap: 10px; cursor: pointer; }
+.ex-check { width: 22px; height: 22px; border-radius: 6px; border: 1.5px solid var(--border); background: none; flex-shrink: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s; }
+.ex-check.done { background: var(--accent); border-color: var(--accent); }
+.ex-check svg { opacity: 0; transition: opacity 0.15s; }
+.ex-check.done svg { opacity: 1; }
+.ex-name { font-size: 14px; font-weight: 500; flex: 1; }
+.ex-meta { font-size: 11px; color: var(--muted); font-family: var(--font-mono); }
+.ex-body { padding: 0 14px 14px; border-top: 1px solid var(--border); margin-top: 0; }
+.ex-sets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+.set-box { background: var(--surface2); border-radius: 8px; padding: 8px; text-align: center; }
+.set-label { font-size: 10px; color: var(--muted); font-family: var(--font-mono); margin-bottom: 4px; }
+.set-input { width: 100%; background: none; border: none; color: var(--text); font-size: 16px; font-family: var(--font-mono); font-weight: 500; text-align: center; outline: none; }
+.ex-note { font-size: 11px; color: var(--muted); margin-top: 10px; line-height: 1.5; padding: 8px; background: var(--surface2); border-radius: 6px; }
+.tag-pill { display: inline-block; font-size: 10px; padding: 2px 7px; border-radius: 10px; margin-right: 4px; font-family: var(--font-mono); }
+.tag-key { background: rgba(240,144,96,0.15); color: var(--accent3); }
+.tag-warm { background: rgba(136,136,136,0.15); color: var(--muted); }
+
+/* PROTEIN */
+.protein-total { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+.protein-bar-bg { height: 8px; background: var(--border); border-radius: 4px; margin: 10px 0 6px; overflow: hidden; }
+.protein-bar-fill { height: 100%; border-radius: 4px; background: var(--accent); transition: width 0.4s ease; }
+.protein-nums { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+.protein-big { font-size: 32px; font-weight: 700; font-family: var(--font-mono); color: var(--accent); }
+.protein-big span { font-size: 14px; color: var(--muted); font-weight: 400; }
+
+.meal-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 10px; overflow: hidden; }
+.meal-header { padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+.meal-name { font-size: 13px; font-weight: 500; }
+.meal-protein { font-family: var(--font-mono); font-size: 12px; color: var(--accent); }
+.meal-detail { padding: 0 14px 12px; font-size: 12px; color: var(--muted); line-height: 1.7; border-top: 1px solid var(--border); }
+.meal-detail p { margin-top: 8px; }
+.protein-add { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-top: 8px; }
+.protein-input-row { display: flex; gap: 8px; align-items: center; background: var(--surface2); border-radius: 8px; padding: 4px 10px; }
+.protein-input-row input { background: none; border: none; color: var(--text); font-family: var(--font-mono); font-size: 14px; width: 50px; text-align: center; outline: none; }
+.btn-sm { padding: 8px 14px; border-radius: 8px; border: none; font-family: var(--font-mono); font-size: 12px; cursor: pointer; transition: all 0.15s; }
+.btn-accent { background: var(--accent); color: #000; }
+.btn-accent:hover { opacity: 0.9; }
+.btn-ghost { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
+.btn-ghost:hover { color: var(--text); }
+
+/* WATER */
+.water-display { text-align: center; padding: 20px 0; }
+.water-big { font-size: 48px; font-weight: 700; font-family: var(--font-mono); color: var(--accent2); }
+.water-big span { font-size: 16px; color: var(--muted); font-weight: 400; }
+.water-cups { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; margin: 16px 0; }
+.water-cup { aspect-ratio: 1; border-radius: 10px; border: 1.5px solid var(--border); background: var(--surface); cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+.water-cup.filled { background: rgba(96,200,240,0.15); border-color: var(--accent2); }
+.water-btns { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.water-btn { padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-family: var(--font-mono); font-size: 12px; cursor: pointer; transition: all 0.15s; text-align: center; }
+.water-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+
+/* SUPPLEMENTS */
+.supp-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 10px; display: flex; align-items: center; gap: 14px; cursor: pointer; transition: all 0.15s; }
+.supp-card.done { border-color: var(--accent); background: rgba(200,240,96,0.05); }
+.supp-icon { width: 40px; height: 40px; border-radius: 10px; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+.supp-info { flex: 1; }
+.supp-name { font-size: 14px; font-weight: 500; }
+.supp-dose { font-size: 11px; color: var(--muted); font-family: var(--font-mono); margin-top: 2px; }
+.supp-time { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.supp-check { width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; transition: all 0.15s; flex-shrink: 0; }
+.supp-card.done .supp-check { background: var(--accent); border-color: var(--accent); }
+
+/* RESET BTN */
+.reset-row { text-align: center; padding: 20px 0 8px; }
+.btn-reset { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 8px; padding: 8px 20px; font-size: 11px; font-family: var(--font-mono); cursor: pointer; }
+.btn-reset:hover { border-color: var(--red); color: var(--red); }
+
+/* SECTION TITLE */
+.sec-title { font-family: var(--font-mono); font-size: 10px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin: 20px 0 10px; }
+
+/* TOAST */
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--accent); color: #000; padding: 10px 20px; border-radius: 20px; font-size: 12px; font-family: var(--font-mono); opacity: 0; pointer-events: none; transition: all 0.3s; z-index: 999; white-space: nowrap; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <button class="nav-btn active" onclick="showPage('train')">訓練</button>
+  <button class="nav-btn" onclick="showPage('nutrition')">飲食</button>
+  <button class="nav-btn" onclick="showPage('water')">喝水</button>
+  <button class="nav-btn" onclick="showPage('supps')">補充品</button>
+</nav>
+
+<!-- TRAINING PAGE -->
+<div class="page active" id="page-train">
+  <p class="page-title">training log</p>
+
+  <div class="week-bar" id="weekBar"></div>
+
+  <div class="day-tabs">
+    <button class="day-tab active" onclick="selectDay('A')">A 推日</button>
+    <button class="day-tab" onclick="selectDay('B')">B 腿日</button>
+    <button class="day-tab" onclick="selectDay('C')">C 拉日</button>
+  </div>
+
+  <div id="exerciseList"></div>
+
+  <div class="reset-row">
+    <button class="btn-reset" onclick="resetToday()">清除今日紀錄</button>
+  </div>
+</div>
+
+<!-- NUTRITION PAGE -->
+<div class="page" id="page-nutrition">
+  <p class="page-title">nutrition</p>
+
+  <div class="protein-total">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end">
+      <div>
+        <div style="font-size:11px;color:var(--muted);font-family:var(--font-mono);margin-bottom:4px">今日蛋白質</div>
+        <div class="protein-big" id="proteinDisplay">0 <span>/ 115g</span></div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:11px;color:var(--muted);font-family:var(--font-mono)">目標</div>
+        <div style="font-size:20px;font-weight:700;font-family:var(--font-mono);color:var(--muted)">115g</div>
+      </div>
+    </div>
+    <div class="protein-bar-bg"><div class="protein-bar-fill" id="proteinBar" style="width:0%"></div></div>
+    <div class="protein-nums"><span>0g</span><span>57g</span><span>115g</span></div>
+  </div>
+
+  <div class="sec-title">各餐紀錄</div>
+  <div id="mealList"></div>
+
+  <div class="reset-row">
+    <button class="btn-reset" onclick="resetProtein()">清除今日蛋白質紀錄</button>
+  </div>
+</div>
+
+<!-- WATER PAGE -->
+<div class="page" id="page-water">
+  <p class="page-title">hydration</p>
+
+  <div class="water-display">
+    <div class="water-big" id="waterDisplay">0 <span>/ 2000 ml</span></div>
+    <div style="font-size:11px;color:var(--muted);margin-top:4px;font-family:var(--font-mono)">目標 1500–2000 ml</div>
+  </div>
+
+  <div class="water-cups" id="waterCups"></div>
+
+  <div class="water-btns">
+    <button class="water-btn" onclick="addWater(150)">+150 ml<br><span style="color:var(--muted)">小杯</span></button>
+    <button class="water-btn" onclick="addWater(250)">+250 ml<br><span style="color:var(--muted)">一杯</span></button>
+    <button class="water-btn" onclick="addWater(500)">+500 ml<br><span style="color:var(--muted)">大瓶</span></button>
+  </div>
+
+  <div class="sec-title" style="margin-top:20px">時間點提醒</div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;font-size:12px;color:var(--muted);line-height:2;">
+    起床後 → 一杯 250ml<br>
+    肌酸配水 → 再一杯 250ml<br>
+    訓練中 → 組間小口補，約 300–400ml<br>
+    乳清後 → 再一杯 250ml
+  </div>
+
+  <div class="reset-row">
+    <button class="btn-reset" onclick="resetWater()">清除今日喝水紀錄</button>
+  </div>
+</div>
+
+<!-- SUPPLEMENTS PAGE -->
+<div class="page" id="page-supps">
+  <p class="page-title">supplements</p>
+
+  <div class="sec-title">今日補充品</div>
+  <div id="suppList"></div>
+
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-top:8px;">
+    <div style="font-size:11px;color:var(--muted);font-family:var(--font-mono);margin-bottom:8px">BCAA 說明</div>
+    <div style="font-size:12px;color:var(--muted);line-height:1.7">已喝乳清的情況下，BCAA 額外效益低。建議停掉，省下來買更多乳清或食物。</div>
+  </div>
+
+  <div class="reset-row">
+    <button class="btn-reset" onclick="resetSupps()">清除今日補充品紀錄</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const WORKOUTS = {
+  A: [
+    { name: '槓鈴臥推', sets: 4, reps: '8–10', weight: 32.5, note: 'RPE 7–8｜肩胛骨收緊，空槓暖身 × 15', tag: 'warm' },
+    { name: '上斜啞鈴推', sets: 3, reps: '10–12', weight: 10, note: '30–45° 角，手肘不過度外展', tag: 'key' },
+    { name: '啞鈴肩推（坐姿）', sets: 3, reps: '10–12', weight: 10, note: '核心收緊，不要用腰代償' },
+    { name: '側平舉', sets: 4, reps: '12–15', weight: 7, note: 'RPE 7｜小拇指略高於大拇指，不聳肩', tag: 'key' },
+    { name: '滑輪三頭下壓', sets: 3, reps: '12–15', weight: 0, note: '手肘固定，感受收縮鎖死' },
+  ],
+  B: [
+    { name: '髖屈肌伸展 + 90/90', sets: 2, reps: '各30秒', weight: 0, note: '穿鉛衣上班後必做，不能省', tag: 'warm' },
+    { name: '背蹲舉', sets: 4, reps: '6–8', weight: 32.5, note: 'RPE 7–8｜大腿平行地面，膝蓋對齊腳尖', tag: 'key' },
+    { name: '羅馬尼亞硬舉', sets: 4, reps: '8–10', weight: 35, note: '感受腿後側被拉長，背部保持平直', tag: 'key' },
+    { name: '保加利亞分腿蹲', sets: 3, reps: '8–10 each', weight: 9, note: 'RPE 7｜離心 3 秒，膝蓋不過腳尖太多' },
+    { name: '腿彎舉（機器）', sets: 3, reps: '12–15', weight: 0, note: '感受收縮，不是甩重量' },
+    { name: '站姿提踵', sets: 4, reps: '15–20', weight: 0, note: '頂部停 1 秒' },
+  ],
+  C: [
+    { name: '滑輪下拉（寬握）', sets: 4, reps: '10–12', weight: 32.5, note: 'RPE 7｜想像手肘往腋下插', tag: 'warm' },
+    { name: '坐姿划船（低位後拉）', sets: 4, reps: '10–12', weight: 37.5, note: 'RPE 7–8｜肩胛骨收緊夾緊，不聳肩', tag: 'key' },
+    { name: '單手啞鈴划船', sets: 3, reps: '10–12 each', weight: 16, note: '以背帶動手臂，不是手臂帶動背' },
+    { name: 'Face Pull', sets: 3, reps: '15', weight: 0, note: '拉向臉部，手肘略高於肩，護肩必做', tag: 'key' },
+    { name: '啞鈴二頭彎舉（交替）', sets: 3, reps: '12 each', weight: 9, note: '離心放下 2 秒，不要甩動' },
+  ]
+};
+
+const MEALS = [
+  { name: '早餐', range: '30–35g', suggestion: '饅頭/包子/麵包 + 蛋 2–3 顆 + 拿鐵\n加蛋是最簡單的蛋白質升級', default: 32 },
+  { name: '午餐', range: '25–35g', suggestion: '外食照常 + 一個拳頭大蛋白質來源\n肉不夠就加滷蛋或豆腐', default: 30 },
+  { name: '訓練前', range: '12–15g', suggestion: '香蕉/能量果凍 + 半球乳清加水\n碳水 + 少量蛋白質，不傷腸胃', default: 13 },
+  { name: '訓練後', range: '25g', suggestion: '乳清一球 + 肌酸 3–5g\n固定這個時間喝，不要視情況', default: 25 },
+  { name: '晚餐', range: '20–30g', suggestion: '白飯 1.5–2 碗（訓練日加量）+ 青菜 + 肉\n訓練日飯量是最簡單的碳水補法', default: 25 },
+  { name: '睡前（選）', range: '10–15g', suggestion: '希臘優格 or 再半球乳清\n若當日蛋白質還不到 115g 再補', default: 12 },
+];
+
+const SUPPS = [
+  { name: '乳清蛋白', dose: '1 球（訓練後必喝）', time: '訓練後 30–60 分鐘內', icon: '🥛' },
+  { name: '肌酸 Creatine', dose: '3–5g（非 7g）', time: '訓練日加進乳清｜非訓練日隨一餐', icon: '⚡' },
+];
+
+const DAYS = ['日','一','二','三','四','五','六'];
+
+function getToday() { return new Date().toDateString(); }
+function getWeekKey() {
+  const d = new Date();
+  const day = d.getDay();
+  const monday = new Date(d);
+  monday.setDate(d.getDate() - (day === 0 ? 6 : day - 1));
+  return monday.toDateString();
+}
+
+function load(key, def) {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : def; } catch { return def; }
+}
+function save(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+
+function checkDay() {
+  const saved = load('lastDay', '');
+  if (saved !== getToday()) {
+    save('lastDay', getToday());
+    save('suppsDone', {});
+    save('waterToday', 0);
+    save('proteinToday', {});
+  }
+}
+
+let currentDay = 'A';
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  event.target.classList.add('active');
+}
+
+function selectDay(day) {
+  currentDay = day;
+  document.querySelectorAll('.day-tab').forEach((b, i) => {
+    b.classList.toggle('active', ['A','B','C'][i] === day);
+  });
+  renderExercises();
+}
+
+function renderWeekBar() {
+  const bar = document.getElementById('weekBar');
+  const trained = load('trainedDays', {});
+  const today = new Date();
+  const dayOfWeek = today.getDay();
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+
+  let html = '';
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const key = d.toDateString();
+    const isToday = key === today.toDateString();
+    const isTrained = trained[key];
+    const label = DAYS[d.getDay()];
+    html += `<div class="week-day ${isTrained?'trained':''} ${isToday?'today':''}" onclick="toggleTrainDay('${key}')">
+      <span class="wd-label">${label}</span>
+      <span class="wd-dot"></span>
+    </div>`;
+  }
+  bar.innerHTML = html;
+}
+
+function toggleTrainDay(key) {
+  const trained = load('trainedDays', {});
+  trained[key] = !trained[key];
+  save('trainedDays', trained);
+  renderWeekBar();
+  toast(trained[key] ? '訓練日記錄 ✓' : '已取消');
+}
+
+function renderExercises() {
+  const list = document.getElementById('exerciseList');
+  const exercises = WORKOUTS[currentDay];
+  const done = load('exDone_' + getToday() + '_' + currentDay, {});
+  const weights = load('exWeights', {});
+
+  let html = '';
+  exercises.forEach((ex, i) => {
+    const key = currentDay + '_' + i;
+    const isDone = done[key];
+    const savedWeight = weights[key] !== undefined ? weights[key] : ex.weight;
+    const tagHtml = ex.tag === 'key' ? '<span class="tag-pill tag-key">重點</span>' :
+                    ex.tag === 'warm' ? '<span class="tag-pill tag-warm">暖身</span>' : '';
+
+    html += `<div class="ex-card">
+      <div class="ex-header">
+        <div class="ex-check ${isDone?'done':''}" onclick="toggleEx('${key}', '${currentDay}')">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#000" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div style="flex:1">
+          <div class="ex-name">${ex.name} ${tagHtml}</div>
+          <div class="ex-meta">${ex.sets} 組 × ${ex.reps}</div>
+        </div>
+      </div>
+      <div class="ex-body">
+        <div class="ex-sets">
+          <div class="set-box">
+            <div class="set-label">使用重量</div>
+            <div style="display:flex;align-items:center;justify-content:center;gap:2px">
+              <input class="set-input" type="number" step="0.5" value="${savedWeight}" onchange="saveWeight('${key}', this.value)" style="width:60px">
+              <span style="font-size:11px;color:var(--muted)">kg</span>
+            </div>
+          </div>
+          <div class="set-box">
+            <div class="set-label">建議起始</div>
+            <div style="font-size:14px;font-family:var(--font-mono);font-weight:500;padding-top:4px">${ex.weight > 0 ? ex.weight + ' kg' : '輕重量'}</div>
+          </div>
+          <div class="set-box">
+            <div class="set-label">組 × 次</div>
+            <div style="font-size:13px;font-family:var(--font-mono);font-weight:500;padding-top:4px">${ex.sets}×${ex.reps}</div>
+          </div>
+        </div>
+        <div class="ex-note">${ex.note}</div>
+      </div>
+    </div>`;
+  });
+  list.innerHTML = html;
+}
+
+function toggleEx(key, day) {
+  const doneKey = 'exDone_' + getToday() + '_' + day;
+  const done = load(doneKey, {});
+  done[key] = !done[key];
+  save(doneKey, done);
+  renderExercises();
+  if (done[key]) toast('完成 ✓');
+}
+
+function saveWeight(key, val) {
+  const weights = load('exWeights', {});
+  weights[key] = parseFloat(val) || 0;
+  save('exWeights', weights);
+  toast('重量已儲存');
+}
+
+function resetToday() {
+  if (confirm('確定清除今日訓練紀錄？')) {
+    save('exDone_' + getToday() + '_' + currentDay, {});
+    renderExercises();
+    toast('今日紀錄已清除');
+  }
+}
+
+// NUTRITION
+function renderMeals() {
+  const protein = load('proteinToday', {});
+  let total = 0;
+  Object.values(protein).forEach(v => total += Number(v) || 0);
+
+  const pct = Math.min(100, Math.round(total / 115 * 100));
+  document.getElementById('proteinDisplay').innerHTML = `${total} <span>/ 115g</span>`;
+  document.getElementById('proteinBar').style.width = pct + '%';
+
+  const list = document.getElementById('mealList');
+  let html = '';
+  MEALS.forEach((meal, i) => {
+    const val = protein[i] !== undefined ? protein[i] : '';
+    html += `<div class="meal-card">
+      <div class="meal-header">
+        <div>
+          <div class="meal-name">${meal.name}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">建議 ${meal.range}</div>
+        </div>
+        <div class="meal-protein">${val || 0}g</div>
+      </div>
+      <div class="meal-detail">
+        <p>${meal.suggestion.replace(/\n/g,'<br>')}</p>
+        <div class="protein-add">
+          <div class="protein-input-row">
+            <span style="font-size:11px;color:var(--muted)">實際攝取</span>
+            <input type="number" value="${val}" placeholder="${meal.default}" id="pi_${i}" style="width:45px">
+            <span style="font-size:11px;color:var(--muted)">g</span>
+          </div>
+          <button class="btn-sm btn-accent" onclick="saveMeal(${i})">儲存</button>
+        </div>
+      </div>
+    </div>`;
+  });
+  list.innerHTML = html;
+}
+
+function saveMeal(i) {
+  const input = document.getElementById('pi_' + i);
+  const val = parseFloat(input.value) || 0;
+  const protein = load('proteinToday', {});
+  protein[i] = val;
+  save('proteinToday', protein);
+  renderMeals();
+  toast('蛋白質已記錄 ✓');
+}
+
+function resetProtein() {
+  if (confirm('確定清除今日蛋白質紀錄？')) {
+    save('proteinToday', {});
+    renderMeals();
+    toast('已清除');
+  }
+}
+
+// WATER
+function renderWater() {
+  const ml = load('waterToday', 0);
+  document.getElementById('waterDisplay').innerHTML = `${ml} <span>/ 2000 ml</span>`;
+  const cups = document.getElementById('waterCups');
+  const filled = Math.floor(ml / 250);
+  let html = '';
+  for (let i = 0; i < 8; i++) {
+    html += `<div class="water-cup ${i < filled ? 'filled' : ''}" onclick="addWater(250)">💧</div>`;
+  }
+  cups.innerHTML = html;
+}
+
+function addWater(ml) {
+  const current = load('waterToday', 0);
+  const next = Math.min(3000, current + ml);
+  save('waterToday', next);
+  renderWater();
+  toast(`+${ml} ml 已記錄`);
+}
+
+function resetWater() {
+  if (confirm('確定清除今日喝水紀錄？')) {
+    save('waterToday', 0);
+    renderWater();
+    toast('已清除');
+  }
+}
+
+// SUPPLEMENTS
+function renderSupps() {
+  const done = load('suppsDone', {});
+  const list = document.getElementById('suppList');
+  let html = '';
+  SUPPS.forEach((s, i) => {
+    const isDone = done[i];
+    html += `<div class="supp-card ${isDone?'done':''}" onclick="toggleSupp(${i})">
+      <div class="supp-icon">${s.icon}</div>
+      <div class="supp-info">
+        <div class="supp-name">${s.name}</div>
+        <div class="supp-dose">${s.dose}</div>
+        <div class="supp-time">${s.time}</div>
+      </div>
+      <div class="supp-check">
+        ${isDone ? '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#000" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>' : ''}
+      </div>
+    </div>`;
+  });
+  list.innerHTML = html;
+}
+
+function toggleSupp(i) {
+  const done = load('suppsDone', {});
+  done[i] = !done[i];
+  save('suppsDone', done);
+  renderSupps();
+  toast(done[i] ? '已服用 ✓' : '已取消');
+}
+
+function resetSupps() {
+  if (confirm('確定清除今日補充品紀錄？')) {
+    save('suppsDone', {});
+    renderSupps();
+  }
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+// INIT
+checkDay();
+renderWeekBar();
+renderExercises();
+renderMeals();
+renderWater();
+renderSupps();
+</script>
+</body>
+</html>
