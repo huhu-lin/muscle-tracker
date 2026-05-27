@@ -110,8 +110,9 @@ async function analyzePhotoFile(file, mealIndex, note = '') {
 
     showResultModal(result, mealIndex, file);
   } catch (err) {
+    console.error('food analysis error:', err);
     hideModal();
-    window._toast('分析失敗：' + err.message);
+    window._toast('分析失敗，請稍後再試');
   }
 }
 
@@ -143,7 +144,7 @@ function setMacroValues(result) {
 export async function reestimate() {
   if (!_pendingFile) return;
   const correctedFoods = document.getElementById('foodsTextarea').value.trim();
-  if (!correctedFoods) return;
+  if (!correctedFoods) { window._toast('請先輸入食物清單'); return; }
 
   const apiKey = getApiKey();
   if (!apiKey) return;
@@ -199,7 +200,8 @@ export async function reestimate() {
     conf.dataset.level = result.confidence || '';
     window._toast('重新估算完成 ✓');
   } catch (err) {
-    window._toast('估算失敗：' + err.message);
+    console.error('reestimate error:', err);
+    window._toast('估算失敗，請稍後再試');
   } finally {
     if (btn) { btn.textContent = '重新估算'; btn.disabled = false; }
   }
@@ -220,11 +222,12 @@ export function confirmFoodAnalysis() {
     }
   }
 
-  // save carbs/fat to macrosToday
+  // save carbs/fat to macrosToday, preserving existing values if AI returned NaN
   const macros = load('macrosToday', {});
+  const oldMacros = macros[mealIndex] || {};
   macros[mealIndex] = {
-    carbs: isNaN(carbs) ? 0 : carbs,
-    fat: isNaN(fat) ? 0 : fat,
+    carbs: isNaN(carbs) ? (oldMacros.carbs ?? 0) : carbs,
+    fat: isNaN(fat) ? (oldMacros.fat ?? 0) : fat,
   };
   save('macrosToday', macros);
 

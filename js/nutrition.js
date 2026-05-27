@@ -7,7 +7,7 @@ export const MEALS = [
   { name: '訓練前', range: '12–15g', suggestion: '香蕉/能量果凍 + 半球乳清加水\n碳水 + 少量蛋白質，不傷腸胃', default: 13 },
   { name: '訓練後', range: '25g', suggestion: '乳清一球 + 肌酸 3–5g\n固定這個時間喝，不要視情況', default: 25 },
   { name: '晚餐', range: '20–30g', suggestion: '白飯 1.5–2 碗（訓練日加量）+ 青菜 + 肉\n訓練日飯量是最簡單的碳水補法', default: 25 },
-  { name: '睡前（選）', range: '10–15g', suggestion: '希臘優格 or 再半球乳清\n若當日蛋白質還不到 115g 再補', default: 12 },
+  { name: '睡前（選）', range: '10–15g', suggestion: '希臘優格 or 再半球乳清\n若當日蛋白質還不到 120g 再補', default: 12 },
 ];
 
 const GOALS = { protein: 120, carbs: 300, fat: 70 };
@@ -45,7 +45,10 @@ export function renderMeals() {
           <div class="meal-name">${meal.name}</div>
           <div style="font-size:11px;color:var(--muted);margin-top:2px">建議蛋白質 ${meal.range}</div>
         </div>
-        <div class="meal-protein">${pVal || 0}g</div>
+        <div style="text-align:right">
+            <div class="meal-protein">${pVal || 0}g</div>
+            <div style="font-size:10px;font-family:var(--font-mono);margin-top:2px;color:var(--muted)"><span style="color:var(--accent2)">C</span>${cVal || 0} <span style="color:var(--accent3)">F</span>${fVal || 0}</div>
+          </div>
       </div>
       <div class="meal-detail">
         <p>${meal.suggestion.replace(/\n/g,'<br>')}</p>
@@ -77,16 +80,20 @@ export function renderMeals() {
 }
 
 export function saveMeal(i) {
-  const pVal = parseFloat(document.getElementById('pi_' + i).value) || 0;
-  const cVal = parseFloat(document.getElementById('ci_' + i).value) || 0;
-  const fVal = parseFloat(document.getElementById('fi_' + i).value) || 0;
+  const pInput = document.getElementById('pi_' + i);
+  const cInput = document.getElementById('ci_' + i);
+  const fInput = document.getElementById('fi_' + i);
 
   const protein = load('proteinToday', {});
-  protein[i] = pVal;
+  if (pInput.value !== '') protein[i] = parseFloat(pInput.value) || 0;
   save('proteinToday', protein);
 
   const macros = load('macrosToday', {});
-  macros[i] = { carbs: cVal, fat: fVal };
+  const old = macros[i] || {};
+  macros[i] = {
+    carbs: cInput.value !== '' ? (parseFloat(cInput.value) || 0) : (old.carbs ?? 0),
+    fat: fInput.value !== '' ? (parseFloat(fInput.value) || 0) : (old.fat ?? 0),
+  };
   save('macrosToday', macros);
 
   renderMeals();
