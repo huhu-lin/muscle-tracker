@@ -45,7 +45,10 @@ export function renderMeals() {
           <div class="meal-name">${meal.name}</div>
           <div style="font-size:11px;color:var(--muted);margin-top:2px">建議蛋白質 ${meal.range}</div>
         </div>
-        <div class="meal-protein">${pVal || 0}g</div>
+        <div style="text-align:right">
+            <div class="meal-protein">${pVal || 0}g</div>
+            <div style="font-size:10px;font-family:var(--font-mono);margin-top:2px;color:var(--muted)"><span style="color:var(--accent2)">C</span>${cVal || 0} <span style="color:var(--accent3)">F</span>${fVal || 0}</div>
+          </div>
       </div>
       <div class="meal-detail">
         <p>${meal.suggestion.replace(/\n/g,'<br>')}</p>

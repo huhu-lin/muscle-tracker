@@ -110,8 +110,9 @@ async function analyzePhotoFile(file, mealIndex, note = '') {
 
     showResultModal(result, mealIndex, file);
   } catch (err) {
+    console.error('food analysis error:', err);
     hideModal();
-    window._toast('分析失敗：' + err.message);
+    window._toast('分析失敗，請稍後再試');
   }
 }
 
@@ -199,7 +200,8 @@ export async function reestimate() {
     conf.dataset.level = result.confidence || '';
     window._toast('重新估算完成 ✓');
   } catch (err) {
-    window._toast('估算失敗：' + err.message);
+    console.error('reestimate error:', err);
+    window._toast('估算失敗，請稍後再試');
   } finally {
     if (btn) { btn.textContent = '重新估算'; btn.disabled = false; }
   }
