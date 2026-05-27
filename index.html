@@ -56,6 +56,8 @@
     <div class="protein-nums"><span>0g</span><span>57g</span><span>115g</span></div>
   </div>
 
+  <div id="macroSummary" class="macro-summary"></div>
+
   <div class="sec-title">各餐紀錄</div>
   <div id="mealList"></div>
 
@@ -112,6 +114,60 @@
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- FOOD VISION MODAL -->
+<div class="modal-overlay" id="foodModal">
+  <div class="modal-box">
+
+    <!-- Step 1: preview + text supplement -->
+    <div id="foodModalPrep" style="display:none">
+      <img id="foodPrepThumb" class="food-thumb" src="" alt="food preview">
+      <div style="font-size:11px;color:var(--muted);font-family:var(--font-mono);margin:10px 0 6px">補充說明（選填）</div>
+      <textarea id="foodSupplementText" class="food-note-input" placeholder="例：大碗、有加蛋、醬汁另外算"></textarea>
+      <div class="modal-btns">
+        <button class="btn-sm btn-ghost" onclick="hideFoodModal()">取消</button>
+        <button class="btn-sm btn-accent" onclick="startFoodAnalysis()">開始分析</button>
+      </div>
+    </div>
+
+    <!-- Step 2: loading -->
+    <div class="modal-loading" id="foodModalLoading" style="display:none">
+      <div class="spinner"></div>
+      <div style="font-size:12px;color:var(--muted);margin-top:14px;font-family:var(--font-mono)">AI 分析中...</div>
+    </div>
+
+    <!-- Step 3: results -->
+    <div id="foodModalResult" style="display:none">
+      <img id="foodThumb" class="food-thumb" src="" alt="food photo">
+      <div id="foodsList" class="foods-list"></div>
+      <div id="foodConfidence" class="food-confidence" style="margin-bottom:12px"></div>
+      <div class="macro-inputs">
+        <div class="macro-input-item">
+          <div class="macro-label" style="color:var(--accent)">蛋白質</div>
+          <input type="number" id="foodProteinInput" class="macro-val-input">
+          <div class="macro-unit">g</div>
+        </div>
+        <div class="macro-input-item">
+          <div class="macro-label" style="color:var(--accent2)">碳水</div>
+          <input type="number" id="foodCarbsInput" class="macro-val-input">
+          <div class="macro-unit">g</div>
+        </div>
+        <div class="macro-input-item">
+          <div class="macro-label" style="color:var(--accent3)">脂肪</div>
+          <input type="number" id="foodFatInput" class="macro-val-input">
+          <div class="macro-unit">g</div>
+        </div>
+      </div>
+      <div class="modal-btns">
+        <button class="btn-sm btn-ghost" onclick="hideFoodModal()">取消</button>
+        <button class="btn-sm btn-accent" id="foodConfirmBtn" onclick="confirmFoodAnalysis()">記錄</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<input type="file" id="foodPhotoInput" accept="image/*" capture="environment" style="display:none">
 
 <script type="module" src="js/app.js"></script>
 </body>
