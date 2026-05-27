@@ -4,7 +4,7 @@
       "matcher": "",
       "hooks": [{
         "type": "command",
-        "command": "bash -c 'DIR=/tmp/claude-code-workspace; [ -d \"$DIR/.git\" ] && git -C \"$DIR\" pull -q origin main 2>/dev/null || { [ -n \"$DIR\" ] && rm -rf \"$DIR\"; git clone --depth 1 --filter=blob:none -q https://github.com/zeuikli/claude-code-workspace.git \"$DIR\" || { echo \"⚠️ Clone failed\" >&2; exit 1; }; }; mkdir -p ~/.claude; printf \"@${DIR}/CLAUDE.md\\n\" > ~/.claude/CLAUDE.md'"
+        "command": "bash -c 'DIR=/tmp/claude-code-workspace; [ -d \"$DIR/.git\" ] && git -C \"$DIR\" pull -q origin main 2>/dev/null || { [ -n \"$DIR\" ] && rm -rf \"$DIR\"; git clone --depth 1 --filter=blob:none -q https://github.com/zeuikli/claude-code-workspace.git \"$DIR\" || { echo \"⚠️ Clone failed\" >&2; exit 1; }; }; mkdir -p ~/.claude; printf \"@${DIR}/CLAUDE.md\\n\" > ~/.claude/CLAUDE.md; mkdir -p ~/.claude/skills; for d in \"$DIR\"/.claude/skills/*/; do [ -d \"$d\" ] || continue; n=$(basename \"$d\"); t=~/.claude/skills/$n; { [ ! -e \"$t\" ] || [ -L \"$t\" ]; } && ln -sfn \"$d\" \"$t\"; done'"
       }]
     }]
   }
