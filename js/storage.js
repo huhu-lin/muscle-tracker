@@ -25,5 +25,6 @@ export function checkDay() {
     save('suppsDone', {});
     save('waterToday', 0);
     save('proteinToday', {});
+    save('macrosToday', {});
   }
 }

@@ -1,5 +1,6 @@
 import { load, save } from './storage.js';
 
+
 export const MEALS = [
   { name: '早餐', range: '30–35g', suggestion: '饅頭/包子/麵包 + 蛋 2–3 顆 + 拿鐵\n加蛋是最簡單的蛋白質升級', default: 32 },
   { name: '午餐', range: '25–35g', suggestion: '外食照常 + 一個拳頭大蛋白質來源\n肉不夠就加滷蛋或豆腐', default: 30 },
@@ -11,12 +12,27 @@ export const MEALS = [
 
 export function renderMeals() {
   const protein = load('proteinToday', {});
-  let total = 0;
-  Object.values(protein).forEach(v => total += Number(v) || 0);
+  const macros = load('macrosToday', {});
 
-  const pct = Math.min(100, Math.round(total / 115 * 100));
-  document.getElementById('proteinDisplay').innerHTML = `${total} <span>/ 115g</span>`;
+  let totalProtein = 0, totalCarbs = 0, totalFat = 0;
+  Object.values(protein).forEach(v => totalProtein += Number(v) || 0);
+  Object.values(macros).forEach(m => {
+    totalCarbs += Number(m.carbs) || 0;
+    totalFat += Number(m.fat) || 0;
+  });
+
+  const pct = Math.min(100, Math.round(totalProtein / 115 * 100));
+  document.getElementById('proteinDisplay').innerHTML = `${totalProtein} <span>/ 115g</span>`;
   document.getElementById('proteinBar').style.width = pct + '%';
+
+  const macroSummary = document.getElementById('macroSummary');
+  if (macroSummary) {
+    macroSummary.innerHTML = `
+      <div class="macro-pill" style="color:var(--accent)">蛋白質 <b>${totalProtein}g</b></div>
+      <div class="macro-pill" style="color:var(--accent2)">碳水 <b>${totalCarbs}g</b></div>
+      <div class="macro-pill" style="color:var(--accent3)">脂肪 <b>${totalFat}g</b></div>
+    `;
+  }
 
   const list = document.getElementById('mealList');
   let html = '';
@@ -38,6 +54,7 @@ export function renderMeals() {
             <input type="number" value="${val}" placeholder="${meal.default}" id="pi_${i}" style="width:45px">
             <span style="font-size:11px;color:var(--muted)">g</span>
           </div>
+          <button class="btn-sm btn-ghost" onclick="triggerFoodPhoto(${i})" title="拍照分析蛋白質">📷</button>
           <button class="btn-sm btn-accent" onclick="saveMeal(${i})">儲存</button>
         </div>
       </div>
