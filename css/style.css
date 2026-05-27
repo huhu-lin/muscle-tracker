@@ -74,6 +74,9 @@ body { background: var(--bg); color: var(--text); font-family: var(--font-main);
 .meal-protein { font-family: var(--font-mono); font-size: 12px; color: var(--accent); }
 .meal-detail { padding: 0 14px 12px; font-size: 12px; color: var(--muted); line-height: 1.7; border-top: 1px solid var(--border); }
 .meal-detail p { margin-top: 8px; }
+.meal-macro-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+.meal-action-row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
+.set-unit { font-size: 10px; color: var(--muted); font-family: var(--font-mono); margin-top: 2px; }
 .protein-add { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; margin-top: 8px; }
 .protein-input-row { display: flex; gap: 8px; align-items: center; background: var(--surface2); border-radius: 8px; padding: 4px 10px; }
 .protein-input-row input { background: none; border: none; color: var(--text); font-family: var(--font-mono); font-size: 14px; width: 50px; text-align: center; outline: none; }
@@ -113,10 +116,11 @@ body { background: var(--bg); color: var(--text); font-family: var(--font-main);
 /* SECTION TITLE */
 .sec-title { font-family: var(--font-mono); font-size: 10px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin: 20px 0 10px; }
 
-/* MACRO SUMMARY */
-.macro-summary { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
-.macro-pill { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 5px 12px; font-size: 11px; font-family: var(--font-mono); }
-.macro-pill b { font-weight: 600; }
+/* MACRO BARS */
+.macro-bars-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
+.macro-bar-label { display: flex; justify-content: space-between; align-items: baseline; font-size: 11px; font-family: var(--font-mono); margin-bottom: 6px; }
+.macro-bar-val { font-size: 13px; font-weight: 600; color: var(--text); }
+.macro-bar-unit { font-size: 10px; color: var(--muted); font-weight: 400; }
 
 /* FOOD VISION MODAL */
 .modal-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.75); display: none; align-items: center; justify-content: center; padding: 20px; }

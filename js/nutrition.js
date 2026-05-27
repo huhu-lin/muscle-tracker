@@ -10,6 +10,8 @@ export const MEALS = [
   { name: '睡前（選）', range: '10–15g', suggestion: '希臘優格 or 再半球乳清\n若當日蛋白質還不到 115g 再補', default: 12 },
 ];
 
+const GOALS = { protein: 120, carbs: 300, fat: 70 };
+
 export function renderMeals() {
   const protein = load('proteinToday', {});
   const macros = load('macrosToday', {});
@@ -21,40 +23,51 @@ export function renderMeals() {
     totalFat += Number(m.fat) || 0;
   });
 
-  const pct = Math.min(100, Math.round(totalProtein / 115 * 100));
-  document.getElementById('proteinDisplay').innerHTML = `${totalProtein} <span>/ 115g</span>`;
-  document.getElementById('proteinBar').style.width = pct + '%';
+  document.getElementById('proteinDisplay').innerHTML = `${totalProtein} <span>/ ${GOALS.protein}g</span>`;
+  document.getElementById('proteinBar').style.width = Math.min(100, Math.round(totalProtein / GOALS.protein * 100)) + '%';
 
-  const macroSummary = document.getElementById('macroSummary');
-  if (macroSummary) {
-    macroSummary.innerHTML = `
-      <div class="macro-pill" style="color:var(--accent)">蛋白質 <b>${totalProtein}g</b></div>
-      <div class="macro-pill" style="color:var(--accent2)">碳水 <b>${totalCarbs}g</b></div>
-      <div class="macro-pill" style="color:var(--accent3)">脂肪 <b>${totalFat}g</b></div>
-    `;
-  }
+  document.getElementById('carbsDisplay').textContent = totalCarbs;
+  document.getElementById('carbsBar').style.width = Math.min(100, Math.round(totalCarbs / GOALS.carbs * 100)) + '%';
+
+  document.getElementById('fatDisplay').textContent = totalFat;
+  document.getElementById('fatBar').style.width = Math.min(100, Math.round(totalFat / GOALS.fat * 100)) + '%';
 
   const list = document.getElementById('mealList');
   let html = '';
   MEALS.forEach((meal, i) => {
-    const val = protein[i] !== undefined ? protein[i] : '';
+    const pVal = protein[i] !== undefined ? protein[i] : '';
+    const mMacros = macros[i] || {};
+    const cVal = mMacros.carbs !== undefined ? mMacros.carbs : '';
+    const fVal = mMacros.fat !== undefined ? mMacros.fat : '';
     html += `<div class="meal-card">
       <div class="meal-header">
         <div>
           <div class="meal-name">${meal.name}</div>
-          <div style="font-size:11px;color:var(--muted);margin-top:2px">建議 ${meal.range}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">建議蛋白質 ${meal.range}</div>
         </div>
-        <div class="meal-protein">${val || 0}g</div>
+        <div class="meal-protein">${pVal || 0}g</div>
       </div>
       <div class="meal-detail">
         <p>${meal.suggestion.replace(/\n/g,'<br>')}</p>
-        <div class="protein-add">
-          <div class="protein-input-row">
-            <span style="font-size:11px;color:var(--muted)">實際攝取</span>
-            <input type="number" value="${val}" placeholder="${meal.default}" id="pi_${i}" style="width:45px">
-            <span style="font-size:11px;color:var(--muted)">g</span>
+        <div class="meal-macro-grid">
+          <div class="set-box">
+            <div class="set-label" style="color:var(--accent)">蛋白質</div>
+            <input type="number" value="${pVal}" placeholder="${meal.default}" id="pi_${i}" class="set-input">
+            <div class="set-unit">g</div>
           </div>
-          <button class="btn-sm btn-ghost" onclick="triggerFoodPhoto(${i})" title="拍照分析蛋白質">📷</button>
+          <div class="set-box">
+            <div class="set-label" style="color:var(--accent2)">碳水</div>
+            <input type="number" value="${cVal}" placeholder="0" id="ci_${i}" class="set-input">
+            <div class="set-unit">g</div>
+          </div>
+          <div class="set-box">
+            <div class="set-label" style="color:var(--accent3)">脂肪</div>
+            <input type="number" value="${fVal}" placeholder="0" id="fi_${i}" class="set-input">
+            <div class="set-unit">g</div>
+          </div>
+        </div>
+        <div class="meal-action-row">
+          <button class="btn-sm btn-ghost" onclick="triggerFoodPhoto(${i})">📷 拍照</button>
           <button class="btn-sm btn-accent" onclick="saveMeal(${i})">儲存</button>
         </div>
       </div>
@@ -64,18 +77,26 @@ export function renderMeals() {
 }
 
 export function saveMeal(i) {
-  const input = document.getElementById('pi_' + i);
-  const val = parseFloat(input.value) || 0;
+  const pVal = parseFloat(document.getElementById('pi_' + i).value) || 0;
+  const cVal = parseFloat(document.getElementById('ci_' + i).value) || 0;
+  const fVal = parseFloat(document.getElementById('fi_' + i).value) || 0;
+
   const protein = load('proteinToday', {});
-  protein[i] = val;
+  protein[i] = pVal;
   save('proteinToday', protein);
+
+  const macros = load('macrosToday', {});
+  macros[i] = { carbs: cVal, fat: fVal };
+  save('macrosToday', macros);
+
   renderMeals();
-  window._toast('蛋白質已記錄 ✓');
+  window._toast('已記錄 ✓');
 }
 
 export function resetProtein() {
-  if (confirm('確定清除今日蛋白質紀錄？')) {
+  if (confirm('確定清除今日飲食紀錄？')) {
     save('proteinToday', {});
+    save('macrosToday', {});
     renderMeals();
     window._toast('已清除');
   }

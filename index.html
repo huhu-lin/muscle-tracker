@@ -44,25 +44,40 @@
   <div class="protein-total">
     <div style="display:flex;justify-content:space-between;align-items:flex-end">
       <div>
-        <div style="font-size:11px;color:var(--muted);font-family:var(--font-mono);margin-bottom:4px">今日蛋白質</div>
-        <div class="protein-big" id="proteinDisplay">0 <span>/ 115g</span></div>
+        <div style="font-size:11px;color:var(--muted);font-family:var(--font-mono);margin-bottom:4px">蛋白質</div>
+        <div class="protein-big" id="proteinDisplay">0 <span>/ 120g</span></div>
       </div>
       <div style="text-align:right">
         <div style="font-size:11px;color:var(--muted);font-family:var(--font-mono)">目標</div>
-        <div style="font-size:20px;font-weight:700;font-family:var(--font-mono);color:var(--muted)">115g</div>
+        <div style="font-size:20px;font-weight:700;font-family:var(--font-mono);color:var(--muted)">120g</div>
       </div>
     </div>
     <div class="protein-bar-bg"><div class="protein-bar-fill" id="proteinBar" style="width:0%"></div></div>
-    <div class="protein-nums"><span>0g</span><span>57g</span><span>115g</span></div>
-  </div>
+    <div class="protein-nums"><span>0g</span><span>60g</span><span>120g</span></div>
 
-  <div id="macroSummary" class="macro-summary"></div>
+    <div class="macro-bars-grid">
+      <div>
+        <div class="macro-bar-label">
+          <span style="color:var(--accent2)">碳水</span>
+          <span class="macro-bar-val"><span id="carbsDisplay">0</span><span class="macro-bar-unit"> / 300g</span></span>
+        </div>
+        <div class="protein-bar-bg"><div class="protein-bar-fill" id="carbsBar" style="width:0%;background:var(--accent2)"></div></div>
+      </div>
+      <div>
+        <div class="macro-bar-label">
+          <span style="color:var(--accent3)">脂肪</span>
+          <span class="macro-bar-val"><span id="fatDisplay">0</span><span class="macro-bar-unit"> / 70g</span></span>
+        </div>
+        <div class="protein-bar-bg"><div class="protein-bar-fill" id="fatBar" style="width:0%;background:var(--accent3)"></div></div>
+      </div>
+    </div>
+  </div>
 
   <div class="sec-title">各餐紀錄</div>
   <div id="mealList"></div>
 
   <div class="reset-row">
-    <button class="btn-reset" onclick="resetProtein()">清除今日蛋白質紀錄</button>
+    <button class="btn-reset" onclick="resetProtein()">清除今日飲食紀錄</button>
   </div>
 </div>
 
