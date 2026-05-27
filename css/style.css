@@ -134,6 +134,7 @@ body { background: var(--bg); color: var(--text); font-family: var(--font-main);
 .modal-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 16px; }
 .food-note-input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: var(--font-main); font-size: 12px; padding: 8px 10px; resize: none; height: 60px; outline: none; }
 .food-note-input:focus { border-color: var(--accent2); }
+.reestimate-row { display: flex; justify-content: space-between; align-items: center; margin: 6px 0 12px; }
 .macro-inputs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .macro-input-item { background: var(--surface2); border-radius: 8px; padding: 8px 6px; text-align: center; }
 .macro-label { font-size: 10px; font-family: var(--font-mono); margin-bottom: 4px; }

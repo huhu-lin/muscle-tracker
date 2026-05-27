@@ -122,12 +122,9 @@ function showResultModal(result, mealIndex, file) {
   const url = URL.createObjectURL(file);
   document.getElementById('foodThumb').src = url;
 
-  const foodsList = document.getElementById('foodsList');
-  foodsList.innerHTML = (result.foods || []).map(f => `<span class="food-tag">${f}</span>`).join('');
+  document.getElementById('foodsTextarea').value = (result.foods || []).join('、');
 
-  document.getElementById('foodProteinInput').value = result.protein_g ?? '';
-  document.getElementById('foodCarbsInput').value = result.carbs_g ?? '';
-  document.getElementById('foodFatInput').value = result.fat_g ?? '';
+  setMacroValues(result);
 
   const conf = document.getElementById('foodConfidence');
   const confMap = { high: '高', medium: '中', low: '低' };
@@ -135,6 +132,77 @@ function showResultModal(result, mealIndex, file) {
   conf.dataset.level = result.confidence || '';
 
   document.getElementById('foodConfirmBtn').dataset.mealIndex = mealIndex;
+}
+
+function setMacroValues(result) {
+  document.getElementById('foodProteinInput').value = result.protein_g ?? '';
+  document.getElementById('foodCarbsInput').value = result.carbs_g ?? '';
+  document.getElementById('foodFatInput').value = result.fat_g ?? '';
+}
+
+export async function reestimate() {
+  if (!_pendingFile) return;
+  const correctedFoods = document.getElementById('foodsTextarea').value.trim();
+  if (!correctedFoods) return;
+
+  const apiKey = getApiKey();
+  if (!apiKey) return;
+
+  const btn = document.querySelector('[onclick="reestimateMacros()"]');
+  if (btn) { btn.textContent = '估算中…'; btn.disabled = true; }
+
+  try {
+    const { base64, mediaType } = await readFileAsBase64(_pendingFile);
+
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 200,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
+            { type: 'text', text: `根據這張照片，以及以下已確認的食物清單：「${correctedFoods}」，重新估算三大營養素。只回傳 JSON（不加 markdown），格式：{"protein_g":數字,"carbs_g":數字,"fat_g":數字,"confidence":"high|medium|low"}` },
+          ],
+        }],
+      }),
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.error?.message || `HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    const text = data.content[0].text.trim();
+
+    let result;
+    try {
+      result = JSON.parse(text);
+    } catch {
+      const match = text.match(/\{[\s\S]*\}/);
+      if (match) result = JSON.parse(match[0]);
+      else throw new Error('無法解析回應');
+    }
+
+    setMacroValues(result);
+    const conf = document.getElementById('foodConfidence');
+    const confMap = { high: '高', medium: '中', low: '低' };
+    conf.textContent = `信心度：${confMap[result.confidence] || result.confidence || '-'}`;
+    conf.dataset.level = result.confidence || '';
+    window._toast('重新估算完成 ✓');
+  } catch (err) {
+    window._toast('估算失敗：' + err.message);
+  } finally {
+    if (btn) { btn.textContent = '重新估算'; btn.disabled = false; }
+  }
 }
 
 export function confirmFoodAnalysis() {
