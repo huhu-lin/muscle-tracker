@@ -3,7 +3,7 @@ import { renderWeekBar, renderExercises, toggleEx, saveWeight, selectDay, toggle
 import { renderMeals, saveMeal, resetProtein } from './nutrition.js';
 import { renderWater, addWater, resetWater } from './water.js';
 import { renderSupps, toggleSupp, resetSupps } from './supps.js';
-import { triggerFoodPhoto, confirmFoodAnalysis, hideModal, startAnalysis, setupFoodPhotoInput } from './foodVision.js';
+import { triggerFoodPhoto, confirmFoodAnalysis, hideModal, startAnalysis, reestimate, setupFoodPhotoInput } from './foodVision.js';
 
 // toast 函式（其他模組透過 window._toast 呼叫）
 function toast(msg) {
@@ -31,6 +31,7 @@ window.triggerFoodPhoto = triggerFoodPhoto;
 window.confirmFoodAnalysis = confirmFoodAnalysis;
 window.hideFoodModal = hideModal;
 window.startFoodAnalysis = startAnalysis;
+window.reestimateMacros = reestimate;
 window.renderMeals = renderMeals;
 
 function showPage(name) {
