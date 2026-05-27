@@ -143,7 +143,7 @@ function setMacroValues(result) {
 export async function reestimate() {
   if (!_pendingFile) return;
   const correctedFoods = document.getElementById('foodsTextarea').value.trim();
-  if (!correctedFoods) return;
+  if (!correctedFoods) { window._toast('請先輸入食物清單'); return; }
 
   const apiKey = getApiKey();
   if (!apiKey) return;
@@ -220,11 +220,12 @@ export function confirmFoodAnalysis() {
     }
   }
 
-  // save carbs/fat to macrosToday
+  // save carbs/fat to macrosToday, preserving existing values if AI returned NaN
   const macros = load('macrosToday', {});
+  const oldMacros = macros[mealIndex] || {};
   macros[mealIndex] = {
-    carbs: isNaN(carbs) ? 0 : carbs,
-    fat: isNaN(fat) ? 0 : fat,
+    carbs: isNaN(carbs) ? (oldMacros.carbs ?? 0) : carbs,
+    fat: isNaN(fat) ? (oldMacros.fat ?? 0) : fat,
   };
   save('macrosToday', macros);
 
