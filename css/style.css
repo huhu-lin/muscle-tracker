@@ -74,6 +74,9 @@ body { background: var(--bg); color: var(--text); font-family: var(--font-main);
 .meal-protein { font-family: var(--font-mono); font-size: 12px; color: var(--accent); }
 .meal-detail { padding: 0 14px 12px; font-size: 12px; color: var(--muted); line-height: 1.7; border-top: 1px solid var(--border); }
 .meal-detail p { margin-top: 8px; }
+.meal-macro-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+.meal-action-row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
+.set-unit { font-size: 10px; color: var(--muted); font-family: var(--font-mono); margin-top: 2px; }
 .protein-add { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; margin-top: 8px; }
 .protein-input-row { display: flex; gap: 8px; align-items: center; background: var(--surface2); border-radius: 8px; padding: 4px 10px; }
 .protein-input-row input { background: none; border: none; color: var(--text); font-family: var(--font-mono); font-size: 14px; width: 50px; text-align: center; outline: none; }
