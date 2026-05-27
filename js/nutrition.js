@@ -10,6 +10,8 @@ export const MEALS = [
   { name: '睡前（選）', range: '10–15g', suggestion: '希臘優格 or 再半球乳清\n若當日蛋白質還不到 115g 再補', default: 12 },
 ];
 
+const GOALS = { protein: 120, carbs: 300, fat: 70 };
+
 export function renderMeals() {
   const protein = load('proteinToday', {});
   const macros = load('macrosToday', {});
@@ -21,18 +23,14 @@ export function renderMeals() {
     totalFat += Number(m.fat) || 0;
   });
 
-  const pct = Math.min(100, Math.round(totalProtein / 115 * 100));
-  document.getElementById('proteinDisplay').innerHTML = `${totalProtein} <span>/ 115g</span>`;
-  document.getElementById('proteinBar').style.width = pct + '%';
+  document.getElementById('proteinDisplay').innerHTML = `${totalProtein} <span>/ ${GOALS.protein}g</span>`;
+  document.getElementById('proteinBar').style.width = Math.min(100, Math.round(totalProtein / GOALS.protein * 100)) + '%';
 
-  const macroSummary = document.getElementById('macroSummary');
-  if (macroSummary) {
-    macroSummary.innerHTML = `
-      <div class="macro-pill" style="color:var(--accent)">蛋白質 <b>${totalProtein}g</b></div>
-      <div class="macro-pill" style="color:var(--accent2)">碳水 <b>${totalCarbs}g</b></div>
-      <div class="macro-pill" style="color:var(--accent3)">脂肪 <b>${totalFat}g</b></div>
-    `;
-  }
+  document.getElementById('carbsDisplay').textContent = totalCarbs;
+  document.getElementById('carbsBar').style.width = Math.min(100, Math.round(totalCarbs / GOALS.carbs * 100)) + '%';
+
+  document.getElementById('fatDisplay').textContent = totalFat;
+  document.getElementById('fatBar').style.width = Math.min(100, Math.round(totalFat / GOALS.fat * 100)) + '%';
 
   const list = document.getElementById('mealList');
   let html = '';
